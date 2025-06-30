@@ -65,6 +65,29 @@ class TeamManager {
             if (e.target.classList.contains('empty-slot')) {
                 this.assignPlayer(e.target);
             }
+            // 선수 이미지 클릭 이벤트 (선수 제거)
+            else if (e.target.classList.contains('player-img') && !e.target.classList.contains('fixed')) {
+                const slot = e.target.closest('.position-slot');
+                const teamElement = slot.closest('.team');
+                const teamId = parseInt(teamElement.dataset.team);
+                
+                // position-slot에서 포지션 찾기
+                let position = null;
+                const positionClasses = ['top', 'mid', 'bot', 'sup'];
+                for (const pos of positionClasses) {
+                    if (slot.classList.contains(pos)) {
+                        position = pos;
+                        break;
+                    }
+                }
+                
+                if (position) {
+                    const player = this.teams[teamId].players[position];
+                    if (player) {
+                        this.removePlayer(slot, player);
+                    }
+                }
+            }
         });
 
         // 드롭 이벤트
@@ -355,15 +378,15 @@ class TeamManager {
         
         // 클릭 시 선수 제거 (확인 없이)
         img.addEventListener('click', () => {
-            this.removePlayer(slot, player);
+            this.removePlayer(positionSlot, player);
         });
 
         playerContainer.appendChild(img);
         playerContainer.appendChild(nameLabel);
         
-        slot.innerHTML = '';
-        slot.appendChild(playerContainer);
-        slot.classList.remove('empty-slot');
+        // 빈 슬롯만 제거하고 선수 컨테이너로 교체
+        slot.remove();
+        positionSlot.insertBefore(playerContainer, scoreInput);
     }
 
     removePlayer(slot, player) {
@@ -371,15 +394,41 @@ class TeamManager {
         const teamId = parseInt(teamElement.dataset.team);
         const position = player.position;
 
+        // 현재 포지션 점수 가져오기 (팀 포인트 복원을 위해)
+        const scoreInput = slot.querySelector('.position-score');
+        const currentScore = parseInt(scoreInput?.value) || 0;
+
         // 팀에서 선수 제거
         this.teams[teamId].players[position] = null;
 
         // 사용된 선수 목록에서 제거
         this.usedPlayers.delete(player.id);
 
-        // 빈 슬롯으로 복원
-        const emptySlotHtml = `<div class="empty-slot" data-position="${position}">${this.getPositionName(position)}</div>`;
-        slot.innerHTML = emptySlotHtml;
+        // 선수 이미지와 이름만 제거하고 빈 슬롯으로 복원
+        const playerContainer = slot.querySelector('.player-container');
+        if (playerContainer) {
+            playerContainer.remove();
+        }
+
+        // 빈 슬롯이 없다면 추가 (HTML에 원래 있어야 하는 구조)
+        if (!slot.querySelector('.empty-slot')) {
+            const emptySlotHtml = `<div class="empty-slot" data-position="${position}">${this.getPositionName(position)}</div>`;
+            slot.insertAdjacentHTML('afterbegin', emptySlotHtml);
+        }
+
+        // 포지션 점수 입력란이 있다면 값만 0으로 초기화
+        if (position !== 'jgl' && scoreInput) {
+            scoreInput.value = '0';
+            scoreInput.dataset.oldValue = '0';
+
+            // 팀 포인트 복원 (이전 점수만큼 다시 추가)
+            const pointsInput = teamElement.querySelector('.points-input');
+            const currentPoints = parseInt(pointsInput.value) || 0;
+            const restoredPoints = Math.min(1000, currentPoints + currentScore);
+            pointsInput.value = restoredPoints;
+
+            console.log(`[팀 ${teamId}] 선수 제거: ${position} 포지션 점수 ${currentScore} → 0, 팀 포인트 ${currentPoints} → ${restoredPoints} (+${currentScore})`);
+        }
 
         this.renderPlayers();
         this.saveToStorage(); // 선수 제거 시 저장
@@ -400,12 +449,6 @@ class TeamManager {
                 input.value = 1000;
             });
 
-            // 포지션 점수 리셋 (정글러 제외)
-            document.querySelectorAll('.position-slot:not(.jgl) .position-score').forEach(input => {
-                input.value = 0;
-                input.dataset.oldValue = 0;
-            });
-
             // 모든 슬롯을 빈 슬롯으로 복원
             document.querySelectorAll('.position-slot:not(.jgl)').forEach(slot => {
                 // 슬롯 내용을 완전히 초기화
@@ -420,29 +463,26 @@ class TeamManager {
                 }
                 
                 if (position) {
-                    // 점수 입력란을 제외하고 모든 내용 제거
-                    const scoreInput = slot.querySelector('.position-score');
+                    // 기존 점수 입력란 찾기
+                    const existingScoreInput = slot.querySelector('.position-score');
+                    
+                    // 슬롯 내용 완전히 초기화
                     slot.innerHTML = '';
                     
-                    // 빈 슬롯과 점수 입력란 다시 생성
+                    // 빈 슬롯 생성
                     const emptySlotHtml = `<div class="empty-slot" data-position="${position}">${this.getPositionName(position)}</div>`;
                     slot.insertAdjacentHTML('beforeend', emptySlotHtml);
                     
-                    if (scoreInput) {
-                        scoreInput.value = '0';
-                        scoreInput.dataset.oldValue = '0';
-                        slot.appendChild(scoreInput);
-                    } else {
-                        const newScoreInput = document.createElement('input');
-                        newScoreInput.type = 'number';
-                        newScoreInput.className = 'position-score';
-                        newScoreInput.value = '0';
-                        newScoreInput.min = '0';
-                        newScoreInput.max = '1000';
-                        newScoreInput.placeholder = '점수';
-                        newScoreInput.dataset.oldValue = '0';
-                        slot.appendChild(newScoreInput);
-                    }
+                    // 점수 입력란 하나만 생성
+                    const scoreInput = document.createElement('input');
+                    scoreInput.type = 'number';
+                    scoreInput.className = 'position-score';
+                    scoreInput.value = '0';
+                    scoreInput.min = '0';
+                    scoreInput.max = '1000';
+                    scoreInput.placeholder = '점수';
+                    scoreInput.dataset.oldValue = '0';
+                    slot.appendChild(scoreInput);
                 }
             });
 

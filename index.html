@@ -7,6 +7,33 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- 슬롯머신 섹션 - 전체 화면 영역에서 이동 가능하도록 body 직속으로 배치 -->
+    <div class="slot-machine-section">
+        <div class="slot-machine-container">
+            <h3>랜덤 선수 뽑기</h3>
+            <div class="slot-machine">
+                <div class="slot-reel" id="slot-reel">
+                    <div class="slot-item" style="top: 0px;">
+                        <img src="top/던.gif" alt="선수">
+                        <span>던</span>
+                    </div>
+                    <div class="slot-item" style="top: 110px;">
+                        <img src="mid/네클릿.gif" alt="선수">
+                        <span>네클릿</span>
+                    </div>
+                    <div class="slot-item" style="top: 220px;">
+                        <img src="bot/강퀴.gif" alt="선수">
+                        <span>강퀴</span>
+                    </div>
+                </div>
+            </div>
+            <button id="slotMachineBtn" class="slot-machine-btn">선수 추첨</button>
+            <div class="slot-result" id="slotResult">
+                <p>버튼을 눌러 랜덤 선수를 뽑아보세요!</p>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <!-- 6팀 이미지 배치 -->
         <div class="teams-container">

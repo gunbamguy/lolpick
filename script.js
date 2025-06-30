@@ -22,6 +22,9 @@ class TeamManager {
         this.selectedPlayer = null;
         this.isEditMode = false;
         this.selectedTeam = null;
+        
+        // 선수 선택 패널의 원래 위치 저장
+        this.originalPlayersPanelParent = null;
 
         // 로컬 스토리지에서 데이터 로드
         this.loadFromStorage();
@@ -30,13 +33,21 @@ class TeamManager {
     }
 
     init() {
+        // 선수 선택 패널의 원래 부모 요소 저장
+        const playersPanel = document.querySelector('.players-panel');
+        this.originalPlayersPanelParent = playersPanel ? playersPanel.parentNode : null;
+        
         this.setupEventListeners();
         this.setupDragAndDrop();
+        this.setupSlotMachineDrag();
         this.highlightActivePositions(this.currentPosition);
         this.renderPlayers();
         
         // 초기 데이터 설정 - 모든 포지션 점수 입력란의 oldValue 설정
         this.initializeScoreInputs();
+        
+        // 슬롯머신 초기 위치 설정 (일반 모드)
+        this.updateSlotMachinePosition(false);
     }
 
     // 초기 포지션 점수 입력란 설정
@@ -132,6 +143,11 @@ class TeamManager {
             this.randomizeTeamPositions();
         });
 
+        // 슬롯머신 버튼 이벤트
+        document.getElementById('slotMachineBtn').addEventListener('click', () => {
+            this.startSlotMachine();
+        });
+
         // 내 팀 선택 이벤트
         document.querySelectorAll('.my-team-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -146,6 +162,11 @@ class TeamManager {
 
         // 포지션 점수 입력 이벤트 (정글러 제외)
         this.setupPositionScoreEvents();
+
+        // 윈도우 리사이즈 이벤트 (슬롯머신 위치 조정)
+        window.addEventListener('resize', () => {
+            this.adjustSlotMachinePositionOnResize();
+        });
     }
 
     // 팀 포인트 입력 이벤트 설정 (재사용 가능한 메서드)
@@ -919,6 +940,14 @@ class TeamManager {
             teamsContainer.classList.remove('my-team-mode');
             playersPanel.classList.remove('in-grid');
             
+            // 슬롯머신을 일반 모드 위치로 이동 (우측 하단)
+            this.updateSlotMachinePosition(false);
+            
+            // 선수 선택 패널을 확실히 원래 위치로 복원
+            if (this.originalPlayersPanelParent && playersPanel.parentNode !== this.originalPlayersPanelParent) {
+                this.originalPlayersPanelParent.appendChild(playersPanel);
+            }
+            
             // teams-container 비우기
             teamsContainer.innerHTML = '';
             
@@ -931,9 +960,6 @@ class TeamManager {
             
             // 이벤트 리스너 재설정
             this.reattachEventListeners();
-            
-            // 선수 선택 패널을 원래 위치로 복원
-            container.appendChild(playersPanel);
         } else {
             // 새로운 팀 선택
             this.selectedTeam = teamId;
@@ -941,6 +967,9 @@ class TeamManager {
             // 레이아웃 변경
             teamsContainer.classList.add('my-team-mode');
             playersPanel.classList.add('in-grid');
+            
+            // 슬롯머신을 내 팀 모드 위치로 이동 (좌측 상단)
+            this.updateSlotMachinePosition(true);
             
             // 선택된 팀과 나머지 팀들 분리
             const selectedTeam = allTeams.find(team => parseInt(team.dataset.team) === teamId);
@@ -1060,6 +1089,527 @@ class TeamManager {
 
         // 포인트 입력 변경 이벤트 재설정
         this.setupTeamPointsEvents();
+    }
+
+    // 슬롯머신 기능
+    startSlotMachine() {
+        const slotBtn = document.getElementById('slotMachineBtn');
+        const slotReel = document.getElementById('slot-reel');
+        const slotResult = document.getElementById('slotResult');
+        
+        // 할당되지 않은 선수들 수집
+        const unassignedPlayers = this.getUnassignedPlayers();
+        
+        if (unassignedPlayers.length === 0) {
+            slotResult.innerHTML = '<p style="color: #e74c3c;">할당되지 않은 선수가 없습니다!</p>';
+            return;
+        }
+        
+        // 버튼 비활성화
+        slotBtn.disabled = true;
+        slotBtn.textContent = '추첨 중...';
+        
+        // 결과 초기화
+        slotResult.innerHTML = '<p>선수를 뽑는 중...</p>';
+        slotResult.classList.remove('winner');
+        
+        // 초기 연속 아이템 표시
+        this.initializeSlotReel(unassignedPlayers);
+        
+        // 슬롯머신 애니메이션 시작 (상하 방향 블러 효과 포함)
+        slotReel.classList.add('spinning');
+        // 기존 감속 클래스 제거
+        slotReel.classList.remove('slowing-1', 'slowing-2', 'slowing-3', 'slowing-4', 'slowing-5');
+        
+        // 인라인 스타일로 블러 강제 적용 (이미지와 텍스트에만)
+        const slotItems = slotReel.querySelectorAll('.slot-item img, .slot-item span');
+        slotItems.forEach(item => {
+            item.style.filter = 'blur(2px)';
+            item.style.webkitFilter = 'blur(2px)';
+        });
+        
+        // 총 0.75초 애니메이션 (절반으로 단축)
+        const totalDuration = 750; // 1.5초에서 0.75초로 단축
+        const fastPhaseEnd = 500; // 0.5초까지는 빠른 회전
+        const slowPhaseStart = 500; // 0.5초부터 감속 시작
+        
+        let startTime = Date.now();
+        let isSlowing = false;
+        
+        // 빠른 회전 단계 (속도 30% 감소)
+        const fastSpinInterval = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            
+            if (elapsed >= fastPhaseEnd && !isSlowing) {
+                isSlowing = true;
+                clearInterval(fastSpinInterval);
+                this.startSlowingPhase(unassignedPlayers, slotReel, slotBtn, slotResult, startTime, totalDuration);
+                return;
+            }
+            
+            // 랜덤 선수 표시
+            const randomPlayer = unassignedPlayers[Math.floor(Math.random() * unassignedPlayers.length)];
+            this.updateSlotDisplay(randomPlayer);
+        }, 70); // 빠른 회전 속도 (시간 단축으로 인해 속도 증가)
+    }
+    
+    // 감속 단계 (easing-in 효과 + 점진적 블러 제거)
+    startSlowingPhase(unassignedPlayers, slotReel, slotBtn, slotResult, startTime, totalDuration) {
+        let lastUpdate = Date.now();
+        let baseInterval = 100; // 기본 감속 간격 (시간 단축으로 인해 조정)
+        
+        const slowSpin = () => {
+            const elapsed = Date.now() - startTime;
+            const remainingTime = totalDuration - elapsed;
+            
+            if (elapsed >= totalDuration) {
+                // 최종 완료
+                this.finishSlotMachine(unassignedPlayers, slotReel, slotBtn, slotResult);
+                return;
+            }
+            
+            // easing-in 계산 (점점 더 느워짐)
+            const slowProgress = (elapsed - 500) / 250; // 0~1 (감속 구간에서의 진행도, 0.25초 구간)
+            const easingFactor = slowProgress * slowProgress * slowProgress; // cubic easing-in
+            const currentInterval = baseInterval + (easingFactor * 200); // 130ms에서 390ms까지 점진적 증가 (30% 느려짐)
+            
+            // 속도에 따른 블러 단계 적용
+            this.updateBlurBySpeed(slotReel, slowProgress);
+            
+            // 랜덤 선수 표시
+            const randomPlayer = unassignedPlayers[Math.floor(Math.random() * unassignedPlayers.length)];
+            this.updateSlotDisplay(randomPlayer);
+            
+            // 다음 업데이트 스케줄링
+            setTimeout(slowSpin, currentInterval);
+        };
+        
+        slowSpin();
+    }
+    
+    // 속도에 따른 블러 효과 업데이트
+    updateBlurBySpeed(slotReel, slowProgress) {
+        // 기존 감속 클래스 제거
+        slotReel.classList.remove('slowing-1', 'slowing-2', 'slowing-3', 'slowing-4', 'slowing-5');
+        
+        // 감속 진행도에 따라 블러 단계 적용 (이미지와 텍스트에만)
+        let blurValue;
+        if (slowProgress > 0.8) {
+            slotReel.classList.add('slowing-5'); // 거의 멈춤 - 최소 블러
+            blurValue = '0.1px';
+        } else if (slowProgress > 0.6) {
+            slotReel.classList.add('slowing-4');
+            blurValue = '0.3px';
+        } else if (slowProgress > 0.4) {
+            slotReel.classList.add('slowing-3');
+            blurValue = '0.5px';
+        } else if (slowProgress > 0.2) {
+            slotReel.classList.add('slowing-2');
+            blurValue = '1px';
+        } else {
+            slotReel.classList.add('slowing-1'); // 초기 감속 - 최대 블러
+            blurValue = '1.5px';
+        }
+        
+        // 인라인 스타일로 블러 강제 적용 (이미지와 텍스트에만)
+        const slotItems = slotReel.querySelectorAll('.slot-item img, .slot-item span');
+        slotItems.forEach(item => {
+            item.style.filter = `blur(${blurValue})`;
+            item.style.webkitFilter = `blur(${blurValue})`;
+        });
+    }
+    
+    // 슬롯머신 완료
+    finishSlotMachine(unassignedPlayers, slotReel, slotBtn, slotResult) {
+        // 최종 선수 선택
+        const finalPlayer = unassignedPlayers[Math.floor(Math.random() * unassignedPlayers.length)];
+        
+        // 애니메이션 종료 (모든 블러 효과 제거)
+        slotReel.classList.remove('spinning', 'slowing-1', 'slowing-2', 'slowing-3', 'slowing-4', 'slowing-5');
+        
+        // 인라인 스타일로 블러 완전 제거 (이미지와 텍스트에서)
+        const slotItems = slotReel.querySelectorAll('.slot-item img, .slot-item span');
+        slotItems.forEach(item => {
+            item.style.filter = 'none';
+            item.style.webkitFilter = 'none';
+        });
+        
+        // 최종 선수만 표시 (애니메이션 없이)
+        slotReel.innerHTML = `
+            <div class="slot-item" style="top: 0px;">
+                <img src="${finalPlayer.position}/${finalPlayer.file}" alt="${finalPlayer.name}">
+                <span>${finalPlayer.name}</span>
+            </div>
+        `;
+        
+        // 결과 표시
+        slotResult.innerHTML = `<p><strong>${finalPlayer.name}</strong> (${this.getPositionName(finalPlayer.position)}) 당첨!</p>`;
+        slotResult.classList.add('winner');
+        
+        // 버튼 활성화
+        slotBtn.disabled = false;
+        slotBtn.textContent = '선수 추첨';
+        
+        console.log('슬롯머신 결과:', finalPlayer);
+    }
+    
+    // 슬롯 릴 초기화 (연속적인 아이템 표시)
+    initializeSlotReel(unassignedPlayers) {
+        const slotReel = document.getElementById('slot-reel');
+        const items = [];
+        
+        // 3개의 랜덤 아이템을 세로로 배치
+        for (let i = 0; i < 3; i++) {
+            const randomPlayer = unassignedPlayers[Math.floor(Math.random() * unassignedPlayers.length)];
+            items.push(`
+                <div class="slot-item" style="top: ${i * 110}px;">
+                    <img src="${randomPlayer.position}/${randomPlayer.file}" alt="${randomPlayer.name}">
+                    <span>${randomPlayer.name}</span>
+                </div>
+            `);
+        }
+        
+        slotReel.innerHTML = items.join('');
+    }
+    
+    // 슬롯 디스플레이 업데이트 - 연속적인 스크롤 효과
+    updateSlotDisplay(player) {
+        const slotReel = document.getElementById('slot-reel');
+        
+        // 현재 표시할 선수와 다음에 올 선수들을 준비
+        const unassignedPlayers = this.getUnassignedPlayers();
+        const currentIndex = unassignedPlayers.findIndex(p => p.id === player.id);
+        
+        // 3개의 연속된 아이템을 표시 (현재, 다음, 그 다음)
+        const items = [];
+        for (let i = 0; i < 3; i++) {
+            const index = (currentIndex + i) % unassignedPlayers.length;
+            const p = unassignedPlayers[index];
+            items.push(`
+                <div class="slot-item" style="top: ${i * 110}px;">
+                    <img src="${p.position}/${p.file}" alt="${p.name}">
+                    <span>${p.name}</span>
+                </div>
+            `);
+        }
+        
+        slotReel.innerHTML = items.join('');
+    }
+    
+    // 할당되지 않은 선수들 수집
+    getUnassignedPlayers() {
+        const unassignedPlayers = [];
+        
+        // 모든 포지션의 모든 선수들을 확인
+        Object.keys(this.players).forEach(position => {
+            this.players[position].forEach(playerFile => {
+                const playerId = `${position}_${playerFile}`;
+                if (!this.usedPlayers.has(playerId)) {
+                    unassignedPlayers.push({
+                        id: playerId,
+                        file: playerFile,
+                        position: position,
+                        name: this.getPlayerName(playerFile)
+                    });
+                }
+            });
+        });
+        
+        return unassignedPlayers;
+    }
+
+    // 슬롯머신 위치 업데이트
+    updateSlotMachinePosition(isMyTeamMode) {
+        const slotMachineSection = document.querySelector('.slot-machine-section');
+        if (!slotMachineSection) return;
+
+        if (isMyTeamMode) {
+            // 내 팀 모드: 화면 가운데로 이동
+            // 약간의 지연을 두어 DOM이 완전히 렌더링된 후 크기 계산
+            setTimeout(() => {
+                const viewportWidth = document.documentElement.clientWidth;
+                const viewportHeight = document.documentElement.clientHeight;
+                
+                // 슬롯머신 크기 정확히 계산
+                const rect = slotMachineSection.getBoundingClientRect();
+                const slotWidth = rect.width || slotMachineSection.offsetWidth || 200;
+                const slotHeight = rect.height || slotMachineSection.offsetHeight || 300;
+                
+                const centerX = Math.max(0, (viewportWidth - slotWidth) / 2);
+                const centerY = Math.max(0, (viewportHeight - slotHeight) / 2);
+                
+                slotMachineSection.style.left = centerX + 'px';
+                slotMachineSection.style.top = centerY + 'px';
+                slotMachineSection.style.right = 'auto';
+                slotMachineSection.style.bottom = 'auto';
+                
+                console.log(`내팀 모드: 슬롯머신을 중앙으로 이동 (${centerX}, ${centerY})`);
+            }, 100);
+            
+            // 내팀 모드에서는 저장된 위치 무시하고 가운데 고정
+            localStorage.removeItem('slotMachinePosition');
+        } else {
+            // 일반 모드: 저장된 위치가 있으면 복원, 없으면 우측 하단
+            const savedPosition = localStorage.getItem('slotMachinePosition');
+            if (savedPosition) {
+                this.loadSlotMachinePosition();
+            } else {
+                // 기본 위치: 우측 하단
+                slotMachineSection.style.top = 'auto';
+                slotMachineSection.style.left = 'auto';
+                slotMachineSection.style.bottom = '20px';
+                slotMachineSection.style.right = '20px';
+            }
+        }
+    }
+
+    // 슬롯머신 드래그 기능 설정
+    setupSlotMachineDrag() {
+        const slotMachineSection = document.querySelector('.slot-machine-section');
+        if (!slotMachineSection) return;
+
+        let isDragging = false;
+        let startX, startY, initialLeft, initialTop;
+
+        slotMachineSection.addEventListener('mousedown', (e) => {
+            // 슬롯머신 버튼 클릭 시에는 드래그 방지
+            if (e.target.classList.contains('slot-machine-btn') || 
+                e.target.closest('.slot-machine-btn')) {
+                return;
+            }
+
+            isDragging = true;
+            
+            // 마우스 시작 위치
+            startX = e.clientX;
+            startY = e.clientY;
+            
+            // 현재 슬롯머신의 실제 위치 가져오기 (getBoundingClientRect 사용)
+            const rect = slotMachineSection.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+
+            // 디버깅 정보 출력
+            console.log(`드래그 시작: startX=${startX}, startY=${startY}, initialLeft=${initialLeft}, initialTop=${initialTop}`);
+
+            slotMachineSection.classList.add('dragging');
+            
+            // 드래그 중에는 transition 비활성화
+            slotMachineSection.style.transition = 'none';
+            
+            // CSS 위치를 left, top으로 고정
+            slotMachineSection.style.left = initialLeft + 'px';
+            slotMachineSection.style.top = initialTop + 'px';
+            slotMachineSection.style.right = 'auto';
+            slotMachineSection.style.bottom = 'auto';
+            
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            // 마우스 이동 거리 계산
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+
+            // 새로운 위치 계산
+            const newX = initialLeft + deltaX;
+            const newY = initialTop + deltaY;
+
+            // 화면 경계 체크 (개발자 도구 영향 없는 실제 뷰포트 크기 사용)
+            const viewportWidth = document.documentElement.clientWidth;
+            const viewportHeight = document.documentElement.clientHeight;
+            const maxX = viewportWidth - slotMachineSection.offsetWidth;
+            const maxY = viewportHeight - slotMachineSection.offsetHeight;
+
+            // 경계 체크: 화면 밖으로 나가지 않도록 제한
+            const clampedX = Math.max(0, Math.min(newX, maxX));
+            const clampedY = Math.max(0, Math.min(newY, maxY));
+
+            // 디버깅 정보 출력 (문제 해결 후 제거 예정)
+            if (Math.abs(deltaX) > 5) { // 의미있는 움직임만 로그
+                console.log(`드래그 중: newX=${newX}, clampedX=${clampedX}, deltaX=${deltaX}, startX=${startX}, clientX=${e.clientX}`);
+            }
+
+            // 위치 설정
+            slotMachineSection.style.left = clampedX + 'px';
+            slotMachineSection.style.top = clampedY + 'px';
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            slotMachineSection.classList.remove('dragging');
+            
+            // 드래그 완료 후 transition 다시 활성화
+            slotMachineSection.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
+            
+            // 현재 위치를 로컬 스토리지에 저장
+            this.saveSlotMachinePosition();
+        });
+
+        // 터치 이벤트 지원 (모바일)
+        slotMachineSection.addEventListener('touchstart', (e) => {
+            if (e.target.classList.contains('slot-machine-btn') || 
+                e.target.closest('.slot-machine-btn')) {
+                return;
+            }
+
+            const touch = e.touches[0];
+            isDragging = true;
+            
+            // 터치 시작 위치
+            startX = touch.clientX;
+            startY = touch.clientY;
+            
+            // 현재 슬롯머신의 실제 위치 가져오기
+            const computedStyle = window.getComputedStyle(slotMachineSection);
+            initialLeft = parseInt(computedStyle.left) || 0;
+            initialTop = parseInt(computedStyle.top) || 0;
+
+            slotMachineSection.classList.add('dragging');
+            slotMachineSection.style.transition = 'none';
+            
+            // CSS 위치를 left, top으로 고정
+            slotMachineSection.style.left = initialLeft + 'px';
+            slotMachineSection.style.top = initialTop + 'px';
+            slotMachineSection.style.right = 'auto';
+            slotMachineSection.style.bottom = 'auto';
+            
+            e.preventDefault();
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+
+            const touch = e.touches[0];
+            
+            // 터치 이동 거리 계산
+            const deltaX = touch.clientX - startX;
+            const deltaY = touch.clientY - startY;
+
+            // 새로운 위치 계산
+            const newX = initialLeft + deltaX;
+            const newY = initialTop + deltaY;
+
+            // 화면 경계 체크 (개발자 도구 영향 없는 실제 뷰포트 크기 사용)
+            const viewportWidth = document.documentElement.clientWidth;
+            const viewportHeight = document.documentElement.clientHeight;
+            const maxX = viewportWidth - slotMachineSection.offsetWidth;
+            const maxY = viewportHeight - slotMachineSection.offsetHeight;
+
+            const clampedX = Math.max(0, Math.min(newX, maxX));
+            const clampedY = Math.max(0, Math.min(newY, maxY));
+
+            slotMachineSection.style.left = clampedX + 'px';
+            slotMachineSection.style.top = clampedY + 'px';
+        });
+
+        document.addEventListener('touchend', () => {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            slotMachineSection.classList.remove('dragging');
+            slotMachineSection.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
+            
+            this.saveSlotMachinePosition();
+        });
+
+        // 저장된 위치 복원
+        this.loadSlotMachinePosition();
+    }
+
+    // 슬롯머신 위치 저장
+    saveSlotMachinePosition() {
+        // 내팀 모드일 때는 위치 저장하지 않음
+        if (this.selectedTeam !== null) {
+            return;
+        }
+
+        const slotMachineSection = document.querySelector('.slot-machine-section');
+        if (!slotMachineSection) return;
+
+        const rect = slotMachineSection.getBoundingClientRect();
+        const position = {
+            left: rect.left,
+            top: rect.top
+        };
+
+        localStorage.setItem('slotMachinePosition', JSON.stringify(position));
+    }
+
+    // 슬롯머신 위치 로드
+    loadSlotMachinePosition() {
+        const savedPosition = localStorage.getItem('slotMachinePosition');
+        if (!savedPosition) return;
+
+        try {
+            const position = JSON.parse(savedPosition);
+            const slotMachineSection = document.querySelector('.slot-machine-section');
+            if (!slotMachineSection) return;
+
+            // 화면 크기 변경에 대응하여 위치 조정 (개발자 도구 영향 없는 실제 뷰포트 크기 사용)
+            const viewportWidth = document.documentElement.clientWidth;
+            const viewportHeight = document.documentElement.clientHeight;
+            const maxX = viewportWidth - slotMachineSection.offsetWidth;
+            const maxY = viewportHeight - slotMachineSection.offsetHeight;
+
+            const clampedX = Math.max(0, Math.min(position.left, maxX));
+            const clampedY = Math.max(0, Math.min(position.top, maxY));
+
+            slotMachineSection.style.left = clampedX + 'px';
+            slotMachineSection.style.top = clampedY + 'px';
+            slotMachineSection.style.right = 'auto';
+            slotMachineSection.style.bottom = 'auto';
+        } catch (error) {
+            console.error('슬롯머신 위치 로드 실패:', error);
+        }
+    }
+
+    // 윈도우 리사이즈 시 슬롯머신 위치 조정
+    adjustSlotMachinePositionOnResize() {
+        const slotMachineSection = document.querySelector('.slot-machine-section');
+        if (!slotMachineSection) return;
+
+        // 현재 위치가 화면 밖으로 나갔는지 확인하고 조정
+        const rect = slotMachineSection.getBoundingClientRect();
+        const viewportWidth = document.documentElement.clientWidth;
+        const viewportHeight = document.documentElement.clientHeight;
+        const maxX = viewportWidth - slotMachineSection.offsetWidth;
+        const maxY = viewportHeight - slotMachineSection.offsetHeight;
+
+        let needsAdjustment = false;
+        let newX = rect.left;
+        let newY = rect.top;
+
+        if (rect.left > maxX) {
+            newX = maxX;
+            needsAdjustment = true;
+        }
+        if (rect.left < 0) {
+            newX = 0;
+            needsAdjustment = true;
+        }
+        if (rect.top > maxY) {
+            newY = maxY;
+            needsAdjustment = true;
+        }
+        if (rect.top < 0) {
+            newY = 0;
+            needsAdjustment = true;
+        }
+
+        if (needsAdjustment) {
+            slotMachineSection.style.left = newX + 'px';
+            slotMachineSection.style.top = newY + 'px';
+            slotMachineSection.style.right = 'auto';
+            slotMachineSection.style.bottom = 'auto';
+            
+            // 조정된 위치 저장
+            this.saveSlotMachinePosition();
+        }
     }
 }
 

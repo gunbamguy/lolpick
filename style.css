@@ -9,8 +9,9 @@ body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     color: #333;
-    padding: 10px;
+    padding: 10px 15%;
     margin: 0;
+    position: relative;
 }
 
 .container {
@@ -18,6 +19,7 @@ body {
     width: 100%;
     margin: 0 auto;
     padding: 0 10px;
+    position: relative;
 }
 
 /* 팀 컨테이너 */
@@ -27,6 +29,11 @@ body {
     gap: 15px;
     margin-bottom: 20px;
     width: 100%;
+}
+
+/* 내 팀 모드에서만 상단 여백 추가 */
+.teams-container.my-team-mode {
+    margin-top: 180px;
 }
 
 .team {
@@ -211,16 +218,18 @@ body {
     padding: 15px;
     border-radius: 15px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    margin: 0 auto 20px auto;
+    max-width: 1200px;
 }
 
 .panel-header-unified {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 20px;
     margin-bottom: 15px;
     flex-wrap: wrap;
+    text-align: center;
 }
 
 .players-panel h2 {
@@ -272,6 +281,8 @@ body {
     gap: 15px;
     justify-items: center;
     overflow: hidden;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
 .player-card {
@@ -1194,3 +1205,422 @@ body {
         max-width: 120px;
     }
 }
+
+/* 슬롯머신 섹션 스타일 */
+.slot-machine-section {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    min-width: 140px;
+    max-width: 180px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    transition: none;
+    cursor: move;
+    user-select: none;
+    transform: scale(0.9);
+}
+
+.slot-machine-section:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.slot-machine-section.dragging {
+    opacity: 0.8;
+    transform: scale(1.05);
+    z-index: 1000;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+}
+
+
+
+.slot-machine-container h3 {
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+    font-size: 1.1em;
+    text-align: center;
+    font-weight: 600;
+}
+
+.slot-machine {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slot-reel {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    width: 120px;
+    height: 110px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.slot-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    text-align: center;
+    height: 100%;
+    width: 100%;
+    opacity: 1;
+    transition: all 0.3s ease;
+    position: absolute;
+    top: 0;
+}
+
+.slot-item img {
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    border: 2px solid #667eea;
+    margin-bottom: 3px;
+    object-fit: cover;
+}
+
+.slot-item span {
+    font-size: 0.75em;
+    font-weight: bold;
+    color: #2c3e50;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 100%;
+    line-height: 1.2;
+}
+
+/* 슬롯머신 애니메이션 - 연속 스크롤 */
+.slot-reel.spinning .slot-item {
+    animation: slotSpinContinuous 0.15s linear infinite;
+    transition: all 0.2s ease;
+    transform: translateY(0);
+    box-shadow: 
+        0 -5px 10px rgba(0, 0, 0, 0.1),
+        0 -10px 15px rgba(0, 0, 0, 0.05),
+        0 5px 10px rgba(0, 0, 0, 0.1),
+        0 10px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* 이미지와 닉네임에만 블러 적용 */
+.slot-reel.spinning .slot-item img,
+.slot-reel.spinning .slot-item span {
+    -webkit-filter: blur(2px);
+    -moz-filter: blur(2px);
+    -ms-filter: blur(2px);
+    filter: blur(2px);
+    transition: all 0.2s ease;
+    transform: scaleY(0.95);
+    opacity: 0.8;
+}
+
+.slot-reel:not(.spinning) .slot-item img,
+.slot-reel:not(.spinning) .slot-item span {
+    -webkit-filter: none;
+    -moz-filter: none;
+    -ms-filter: none;
+    filter: none;
+    transition: all 0.3s ease;
+}
+
+/* 감속 단계별 블러 효과 - 이미지와 닉네임에만 */
+.slot-reel.slowing-1 .slot-item img,
+.slot-reel.slowing-1 .slot-item span {
+    -webkit-filter: blur(1.5px);
+    -moz-filter: blur(1.5px);
+    -ms-filter: blur(1.5px);
+    filter: blur(1.5px);
+    transform: scaleY(0.96);
+    opacity: 0.85;
+}
+
+/* 감속 단계별 모션 블러 감소 */
+.slot-reel.slowing-1 .slot-item {
+    box-shadow: 
+        0 -4px 8px rgba(0, 0, 0, 0.08),
+        0 -8px 12px rgba(0, 0, 0, 0.04),
+        0 4px 8px rgba(0, 0, 0, 0.08),
+        0 8px 12px rgba(0, 0, 0, 0.04);
+}
+
+.slot-reel.slowing-2 .slot-item img,
+.slot-reel.slowing-2 .slot-item span {
+    -webkit-filter: blur(1px);
+    -moz-filter: blur(1px);
+    -ms-filter: blur(1px);
+    filter: blur(1px);
+    transform: scaleY(0.97);
+    opacity: 0.9;
+}
+
+.slot-reel.slowing-2 .slot-item {
+    box-shadow: 
+        0 -3px 6px rgba(0, 0, 0, 0.06),
+        0 -6px 9px rgba(0, 0, 0, 0.03),
+        0 3px 6px rgba(0, 0, 0, 0.06),
+        0 6px 9px rgba(0, 0, 0, 0.03);
+}
+
+.slot-reel.slowing-3 .slot-item img,
+.slot-reel.slowing-3 .slot-item span {
+    -webkit-filter: blur(0.5px);
+    -moz-filter: blur(0.5px);
+    -ms-filter: blur(0.5px);
+    filter: blur(0.5px);
+    transform: scaleY(0.98);
+    opacity: 0.95;
+}
+
+.slot-reel.slowing-3 .slot-item {
+    box-shadow: 
+        0 -2px 4px rgba(0, 0, 0, 0.04),
+        0 -4px 6px rgba(0, 0, 0, 0.02),
+        0 2px 4px rgba(0, 0, 0, 0.04),
+        0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+.slot-reel.slowing-4 .slot-item img,
+.slot-reel.slowing-4 .slot-item span {
+    -webkit-filter: blur(0.3px);
+    -moz-filter: blur(0.3px);
+    -ms-filter: blur(0.3px);
+    filter: blur(0.3px);
+    transform: scaleY(0.99);
+    opacity: 0.98;
+}
+
+.slot-reel.slowing-4 .slot-item {
+    box-shadow: 
+        0 -1px 2px rgba(0, 0, 0, 0.02),
+        0 -2px 3px rgba(0, 0, 0, 0.01),
+        0 1px 2px rgba(0, 0, 0, 0.02),
+        0 2px 3px rgba(0, 0, 0, 0.01);
+}
+
+.slot-reel.slowing-5 .slot-item img,
+.slot-reel.slowing-5 .slot-item span {
+    -webkit-filter: blur(0.1px);
+    -moz-filter: blur(0.1px);
+    -ms-filter: blur(0.1px);
+    filter: blur(0.1px);
+    transform: scaleY(1);
+    opacity: 1;
+}
+
+.slot-reel.slowing-5 .slot-item {
+    box-shadow: none;
+}
+
+@keyframes slotSpinContinuous {
+    0% { 
+        transform: translateY(-110px);
+    }
+    100% { 
+        transform: translateY(0);
+    }
+}
+
+.slot-machine-btn {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.8em;
+    width: 100%;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+}
+
+.slot-machine-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+}
+
+.slot-machine-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.slot-result {
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 6px;
+    border: 1px solid #ecf0f1;
+    text-align: center;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slot-result p {
+    margin: 0;
+    font-size: 0.8em;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.slot-result.winner {
+    background: rgba(46, 204, 113, 0.1);
+    border-color: #2ecc71;
+    color: #27ae60;
+}
+
+.slot-result.winner p {
+    color: #27ae60;
+    font-weight: bold;
+}
+
+/* 반응형 슬롯머신 */
+@media (max-width: 1024px) {
+    body {
+        padding: 10px 5%;
+    }
+    
+    .slot-machine-section {
+        position: relative;
+        top: auto !important;
+        left: auto !important;
+        bottom: auto !important;
+        right: auto !important;
+        margin-bottom: 20px;
+        width: 100%;
+        max-width: 210px;
+        margin: 0 auto 20px auto;
+        transform: scale(1);
+    }
+    
+    .teams-container {
+        margin-top: 0;
+    }
+    
+    .teams-container.my-team-mode {
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .slot-machine-section {
+        min-width: auto;
+        width: 100%;
+        max-width: 175px;
+        padding: 10px;
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        bottom: auto !important;
+        right: auto !important;
+        transform: scale(1);
+    }
+    
+    .teams-container {
+        margin-top: 0;
+    }
+    
+    .teams-container.my-team_mode {
+        margin-top: 0;
+    }
+    
+    .slot-machine {
+        height: 130px;
+        padding: 10px;
+    }
+    
+    .slot-reel {
+        width: 100px;
+        height: 95px;
+    }
+    
+    .slot-item img {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 2px;
+    }
+    
+    .slot-item span {
+        font-size: 0.65em;
+        line-height: 1.1;
+    }
+}
+
+@media (max-width: 480px) {
+    .slot-machine-section {
+        max-width: 140px;
+        padding: 8px;
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        bottom: auto !important;
+        right: auto !important;
+        transform: scale(1);
+    }
+    
+    .teams-container {
+        margin-top: 0;
+    }
+    
+    .teams-container.my-team_mode {
+        margin-top: 0;
+    }
+    
+    .slot-machine-container h3 {
+        font-size: 0.9em;
+        margin-bottom: 8px;
+    }
+    
+    .slot-machine {
+        height: 110px;
+        padding: 8px;
+    }
+    
+    .slot-reel {
+        width: 85px;
+        height: 85px;
+    }
+    
+    .slot-item img {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 2px;
+    }
+    
+    .slot-item span {
+        font-size: 0.6em;
+        line-height: 1.1;
+    }
+    
+    .slot-machine-btn {
+        padding: 6px 10px;
+        font-size: 0.75em;
+    }
+}
+

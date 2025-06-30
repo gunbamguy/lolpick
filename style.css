@@ -381,6 +381,23 @@ body {
     box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
 }
 
+.random-btn {
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
+}
+
+.random-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(155, 89, 182, 0.4);
+}
+
 /* 컨트롤 버튼들 */
 .control-buttons {
     display: flex;
@@ -763,7 +780,8 @@ body {
 }
 
 .teams-container.my-team-mode .players-panel.in-grid .edit-btn,
-.teams-container.my-team-mode .players-panel.in-grid .reset-btn {
+.teams-container.my-team-mode .players-panel.in-grid .reset-btn,
+.teams-container.my-team-mode .players-panel.in-grid .random-btn {
     padding: 2px 4px;
     font-size: 0.6em;
 }
@@ -1088,7 +1106,7 @@ body {
         min-width: 40px;
     }
     
-    .edit-btn, .reset-btn {
+    .edit-btn, .reset-btn, .random-btn {
         padding: 4px 8px;
         font-size: 0.75em;
     }

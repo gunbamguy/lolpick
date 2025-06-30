@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리그 오브 레전드 팀 구성</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 6팀 이미지 배치 -->
+        <div class="teams-container">
+            <div class="team" data-team="0" draggable="false">
+                <div class="team-header">
+                    <h3>팀 1</h3>
+                    <button class="my-team-btn" data-team="0">내 팀</button>
+                </div>
+                <div class="team-images">
+                    <!-- 정글 (팀장) -->
+                    <div class="position-slot jgl">
+                        <img src="jgl/갱맘.gif" alt="정글" class="player-img fixed">
+                        <div class="position-label">정글 (팀장)</div>
+                        <div class="player-name-label">갱맘</div>
+                    </div>
+                    <!-- 탑 -->
+                    <div class="position-slot top">
+                        <div class="empty-slot" data-position="top">탑</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <!-- 미드 -->
+                    <div class="position-slot mid">
+                        <div class="empty-slot" data-position="mid">미드</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <!-- 봇 -->
+                    <div class="position-slot bot">
+                        <div class="empty-slot" data-position="bot">봇</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <!-- 서포터 -->
+                    <div class="position-slot sup">
+                        <div class="empty-slot" data-position="sup">서포터</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                </div>
+                <div class="team-points">
+                    포인트: <input type="number" class="points-input" value="1000" min="0" max="1000">
+                </div>
+            </div>
+
+            <div class="team" data-team="1" draggable="false">
+                <div class="team-header">
+                    <h3>팀 2</h3>
+                    <button class="my-team-btn" data-team="1">내 팀</button>
+                </div>
+                <div class="team-images">
+                    <div class="position-slot jgl">
+                        <img src="jgl/소우릎.gif" alt="정글" class="player-img fixed">
+                        <div class="position-label">정글 (팀장)</div>
+                        <div class="player-name-label">소우릎</div>
+                    </div>
+                    <div class="position-slot top">
+                        <div class="empty-slot" data-position="top">탑</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <div class="position-slot mid">
+                        <div class="empty-slot" data-position="mid">미드</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <div class="position-slot bot">
+                        <div class="empty-slot" data-position="bot">봇</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <div class="position-slot sup">
+                        <div class="empty-slot" data-position="sup">서포터</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                </div>
+                <div class="team-points">
+                    포인트: <input type="number" class="points-input" value="1000" min="0" max="1000">
+                </div>
+            </div>
+
+            <div class="team" data-team="2" draggable="false">
+                <div class="team-header">
+                    <h3>팀 3</h3>
+                    <button class="my-team-btn" data-team="2">내 팀</button>
+                </div>
+                <div class="team-images">
+                    <div class="position-slot jgl">
+                        <img src="jgl/앰비션.gif" alt="정글" class="player-img fixed">
+                        <div class="position-label">정글 (팀장)</div>
+                        <div class="player-name-label">앰비션</div>
+                    </div>
+                    <div class="position-slot top">
+                        <div class="empty-slot" data-position="top">탑</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <div class="position-slot mid">
+                        <div class="empty-slot" data-position="mid">미드</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <div class="position-slot bot">
+                        <div class="empty-slot" data-position="bot">봇</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <div class="position-slot sup">
+                        <div class="empty-slot" data-position="sup">서포터</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                </div>
+                <div class="team-points">
+                    포인트: <input type="number" class="points-input" value="1000" min="0" max="1000">
+                </div>
+            </div>
+
+            <div class="team" data-team="3" draggable="false">
+                <div class="team-header">
+                    <h3>팀 4</h3>
+                    <button class="my-team-btn" data-team="3">내 팀</button>
+                </div>
+                <div class="team-images">
+                    <div class="position-slot jgl">
+                        <img src="jgl/인섹.gif" alt="정글" class="player-img fixed">
+                        <div class="position-label">정글 (팀장)</div>
+                        <div class="player-name-label">인섹</div>
+                    </div>
+                    <div class="position-slot top">
+                        <div class="empty-slot" data-position="top">탑</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <div class="position-slot mid">
+                        <div class="empty-slot" data-position="mid">미드</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <div class="position-slot bot">
+                        <div class="empty-slot" data-position="bot">봇</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <div class="position-slot sup">
+                        <div class="empty-slot" data-position="sup">서포터</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                </div>
+                <div class="team-points">
+                    포인트: <input type="number" class="points-input" value="1000" min="0" max="1000">
+                </div>
+            </div>
+
+            <div class="team" data-team="4" draggable="false">
+                <div class="team-header">
+                    <h3>팀 5</h3>
+                    <button class="my-team-btn" data-team="4">내 팀</button>
+                </div>
+                <div class="team-images">
+                    <div class="position-slot jgl">
+                        <img src="jgl/큐베.gif" alt="정글" class="player-img fixed">
+                        <div class="position-label">정글 (팀장)</div>
+                        <div class="player-name-label">큐베</div>
+                    </div>
+                    <div class="position-slot top">
+                        <div class="empty-slot" data-position="top">탑</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <div class="position-slot mid">
+                        <div class="empty-slot" data-position="mid">미드</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <div class="position-slot bot">
+                        <div class="empty-slot" data-position="bot">봇</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <div class="position-slot sup">
+                        <div class="empty-slot" data-position="sup">서포터</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                </div>
+                <div class="team-points">
+                    포인트: <input type="number" class="points-input" value="1000" min="0" max="1000">
+                </div>
+            </div>
+
+            <div class="team" data-team="5" draggable="false">
+                <div class="team-header">
+                    <h3>팀 6</h3>
+                    <button class="my-team-btn" data-team="5">내 팀</button>
+                </div>
+                <div class="team-images">
+                    <div class="position-slot jgl">
+                        <img src="jgl/플레임.gif" alt="정글" class="player-img fixed">
+                        <div class="position-label">정글 (팀장)</div>
+                        <div class="player-name-label">플레임</div>
+                    </div>
+                    <div class="position-slot top">
+                        <div class="empty-slot" data-position="top">탑</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <div class="position-slot mid">
+                        <div class="empty-slot" data-position="mid">미드</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <div class="position-slot bot">
+                        <div class="empty-slot" data-position="bot">봇</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                    <div class="position-slot sup">
+                        <div class="empty-slot" data-position="sup">서포터</div>
+                        <input type="number" class="position-score" value="0" min="0" max="1000" placeholder="점수">
+                    </div>
+                </div>
+                <div class="team-points">
+                    포인트: <input type="number" class="points-input" value="1000" min="0" max="1000">
+                </div>
+            </div>
+        </div>
+
+        <!-- 선수 선택 패널 -->
+        <div class="players-panel">
+            <div class="panel-header-unified">
+                <h2>선수 선택</h2>
+                <div class="position-tabs">
+                    <button class="tab-btn active" data-position="top">탑</button>
+                    <button class="tab-btn" data-position="mid">미드</button>
+                    <button class="tab-btn" data-position="bot">봇</button>
+                    <button class="tab-btn" data-position="sup">서포터</button>
+                </div>
+                <div class="control-buttons">
+                    <button id="teamEditBtn" class="edit-btn">팀위치 수정</button>
+                    <button id="resetBtn" class="reset-btn">모든 팀 리셋</button>
+                </div>
+            </div>
+            <div class="players-grid" id="playersGrid">
+                <!-- JavaScript로 동적 생성 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 로고 섹션 -->
+    <div class="logo-section">
+        <div class="logo-container">
+            <a href="https://chzzk.naver.com/" target="_blank" rel="noopener noreferrer">
+                <img src="logo.jpg" alt="치지직 로고" class="logo-img">
+            </a>
+            <a href="https://www.enchantenter.co.kr/" target="_blank" rel="noopener noreferrer">
+                <img src="logo2.webp" alt="인챈트 로고" class="logo-img">
+            </a>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

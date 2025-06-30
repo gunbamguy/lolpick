@@ -1,0 +1,11 @@
+# GitHub Pages 자동 배포 설정
+# 이 파일은 GitHub Pages 배포 시 필요한 설정을 담고 있습니다.
+
+# 사이트 기본 정보
+title: "LOL 팀 빌딩 시스템"
+description: "리그 오브 레전드 6팀 팀빌딩/경매 웹 애플리케이션"
+
+# GitHub Pages 설정
+theme: jekyll-theme-minimal
+plugins:
+  - jekyll-github-metadata

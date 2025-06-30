@@ -1,0 +1,1178 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+    padding: 10px;
+    margin: 0;
+}
+
+.container {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 10px;
+}
+
+/* 팀 컨테이너 */
+.teams-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.team {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    cursor: move;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 100%;
+}
+
+.team:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.team.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+}
+
+.team.drag-over {
+    border: 3px dashed #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.team h3 {
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-size: 1.1em;
+}
+
+.team-images {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 8px;
+    justify-items: center;
+}
+
+.position-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.player-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.player-name-label {
+    font-size: 0.65em;
+    color: #2c3e50;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    text-align: center;
+    font-weight: bold;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1px 3px;
+    border-radius: 3px;
+    min-height: 1em;
+}
+
+.player-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    border: 3px solid #667eea;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    object-fit: cover;
+}
+
+.player-img:hover {
+    transform: scale(1.1);
+}
+
+.player-img.fixed {
+    border-color: #f39c12;
+    cursor: default;
+}
+
+.player-img.fixed:hover {
+    transform: none;
+}
+
+.empty-slot {
+    width: 80px;
+    height: 80px;
+    border: 3px dashed #bdc3c7;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ecf0f1;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.8em;
+    color: #7f8c8d;
+    text-align: center;
+}
+
+.empty-slot:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+    transform: scale(1.05);
+}
+
+.position-label {
+    font-size: 0.55em;
+    color: #7f8c8d;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    text-align: center;
+    line-height: 1.1;
+}
+
+.position-score {
+    width: 50px;
+    padding: 2px;
+    border: 1px solid #ecf0f1;
+    border-radius: 3px;
+    text-align: center;
+    font-size: 0.7em;
+    margin-top: 2px;
+    background: white;
+}
+
+.position-score:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+.team-points {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 0.9em;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.9) !important;
+    padding: 8px;
+    border-radius: 6px;
+    margin: 10px 5px 5px 5px;
+    border: 1px solid #bdc3c7;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    min-height: 40px;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.points-input {
+    width: 60px;
+    padding: 4px 6px;
+    border: 2px solid #3498db;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: bold;
+    background: white;
+    font-size: 0.8em;
+    color: #2c3e50;
+}
+
+.points-input:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+}
+
+/* 선수 선택 패널 */
+.players-panel {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.panel-header-unified {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.players-panel h2 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.2em;
+    white-space: nowrap;
+}
+
+.position-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.tab-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    background: #ecf0f1;
+    color: #2c3e50;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    font-size: 0.85em;
+    min-width: 50px;
+}
+
+.control-buttons {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.tab-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.players-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 15px;
+    justify-items: center;
+    overflow: hidden;
+}
+
+.player-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    min-width: 100px;
+}
+
+.player-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.player-card.used {
+    background: #95a5a6;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.player-card img {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    border: 3px solid white;
+    margin-bottom: 10px;
+    object-fit: cover;
+}
+
+.player-card h4 {
+    font-size: 0.9em;
+    text-align: center;
+}
+
+/* 드래그 앤 드롭을 위한 팀 스타일 */
+.team {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    cursor: move;
+    transition: all 0.3s ease;
+}
+
+.team:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.team.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+}
+
+.team.drag-over {
+    border: 3px dashed #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+/* 포지션 활성화 스타일 */
+.position-slot.active {
+    background: rgba(102, 126, 234, 0.1);
+    border: 2px dashed #667eea;
+    border-radius: 10px;
+    padding: 5px;
+}
+
+.position-slot.active .empty-slot {
+    background: rgba(102, 126, 234, 0.2);
+    border: 1px solid #667eea;
+}
+
+/* 패널 헤더 */
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.panel-header h2 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.reset-btn {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+
+.reset-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+}
+
+/* 컨트롤 버튼들 */
+.control-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.edit-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.edit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+.edit-btn.active {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+}
+
+/* 팀 헤더 */
+.team-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.team-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.1em;
+}
+
+/* 내 팀 버튼 */
+.my-team-btn {
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.7em;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.my-team-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(155, 89, 182, 0.4);
+}
+
+.my-team-btn.selected {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4);
+}
+
+/* 팀 레이아웃 스타일 */
+.teams-container.my-team-mode {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto 1fr auto;
+    gap: 10px;
+    width: 100%;
+    height: auto;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: 800px;
+    align-items: start;
+    justify-items: stretch;
+    padding: 8px 0;
+}
+
+.team.my-team {
+    grid-column: 1 / 4;
+    grid-row: 1;
+    transform: scale(1.0);
+    z-index: 10;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    border: 3px solid #e74c3c;
+    max-width: 100%;
+    overflow: visible;
+    justify-self: center;
+    width: 70%;
+    max-width: 700px;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.98);
+}
+
+/* 내 팀의 컨텐츠 크기 조정 */
+.team.my-team .player-img,
+.team.my-team .empty-slot {
+    width: 100px;
+    height: 100px;
+    font-size: 1.1em;
+}
+
+.team.my-team .position-score {
+    width: 80px;
+    font-size: 1.0em;
+    padding: 4px;
+}
+
+.team.my-team .position-label {
+    font-size: 0.9em;
+    margin-top: 3px;
+}
+
+.team.my-team .player-name-label {
+    font-size: 1.0em;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+.team.my-team .team-images {
+    gap: 10px;
+    padding: 15px;
+}
+
+.team.my-team h3 {
+    font-size: 1.4em;
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.team.my-team .team-points {
+    font-size: 1.1em;
+    margin-top: 12px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.9) !important;
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid #e74c3c;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.team.my-team .points-input {
+    font-size: 1.0em;
+    width: 80px;
+    padding: 6px 8px;
+    border: 2px solid #3498db;
+    border-radius: 6px;
+    font-weight: bold;
+    text-align: center;
+    background: white;
+}
+
+.team.my-team .my-team-btn {
+    font-size: 1.0em;
+    padding: 6px 12px;
+    font-weight: 600;
+}
+
+.other-teams-container {
+    grid-column: 1 / 4;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 15px;
+    width: 100%;
+    height: auto;
+    min-height: 500px;
+    align-items: start;
+    margin-top: 5px;
+}
+
+.team.other-team {
+    transform: scale(1.0);
+    max-width: 100%;
+    overflow: visible;
+    width: 100%;
+    height: auto;
+    min-height: 220px;
+    max-height: none;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    justify-self: stretch;
+    align-self: start;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.95);
+}
+
+/* 다른 팀들의 포인트 박스 강제 표시 */
+.team.other-team .team-points {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.9) !important;
+    padding: 8px;
+    border-radius: 6px;
+    margin: 8px 5px 5px 5px;
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 0.9em;
+    border: 1px solid #bdc3c7;
+}
+
+.other-teams-container .team.other-team:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.other-teams-container .team.other-team:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.other-teams-container .team.other-team:nth-child(3) {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+.other-teams-container .team.other-team:nth-child(4) {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.other-teams-container .team.other-team:nth-child(5) {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+.players-panel.in-grid {
+    grid-column: 3;
+    grid-row: 2;
+    margin-bottom: 0;
+    transform: scale(1.0);
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    max-height: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-self: stretch;
+    align-self: start;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 12px;
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* 내팀 모드에서 선수 그리드 크기 조정 */
+.teams-container.my-team-mode .players-panel.in-grid .players-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+    overflow: visible;
+    padding: 8px;
+    flex: 1;
+    align-content: start;
+}
+
+.teams-container.my-team-mode .players-panel.in-grid .player-card {
+    min-width: auto;
+    width: 100%;
+    padding: 6px;
+    font-size: 0.8em;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+}
+
+.teams-container.my-team-mode .players-panel.in-grid .player-card img {
+    width: 50px;
+    height: 50px;
+    margin: 0;
+    margin-bottom: 4px;
+    border: 2px solid white;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.teams-container.my-team-mode .players-panel.in-grid .player-card h4 {
+    font-size: 0.7em;
+    margin: 0;
+    color: #ffffff;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2;
+}
+
+/* 내팀 모드에서 다른 팀들의 이미지 크기 조정 */
+.teams-container.my-team-mode .team.other-team .player-img,
+.teams-container.my-team-mode .team.other-team .empty-slot {
+    width: 75px;
+    height: 75px;
+    font-size: 0.9em;
+}
+
+.teams-container.my-team-mode .team.other-team .position-score {
+    width: 60px;
+    font-size: 0.8em;
+    padding: 3px;
+}
+
+.teams-container.my-team-mode .team.other-team .position-label {
+    font-size: 0.7em;
+}
+
+.teams-container.my-team-mode .team.other-team .player-name-label {
+    font-size: 0.8em;
+    margin-top: 2px;
+}
+
+.teams-container.my-team-mode .team.other-team .team-images {
+    gap: 6px;
+    padding: 8px;
+}
+
+.teams-container.my-team-mode .team.other-team h3 {
+    font-size: 1.2em;
+    margin-bottom: 8px;
+}
+
+.teams-container.my-team-mode .team.other-team .team-points {
+    font-size: 0.9em;
+    margin-top: 8px;
+    display: flex !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid #bdc3c7 !important;
+}
+
+.teams-container.my-team-mode .team.other-team .points-input {
+    font-size: 0.8em;
+    width: 60px;
+    border: 1px solid #3498db;
+}
+
+.teams-container.my-team-mode .team.other-team .my-team-btn {
+    font-size: 0.8em;
+    padding: 4px 8px;
+}
+
+/* 내팀 모드에서 선수 패널 컴팩트 스타일 */
+.teams-container.my-team-mode .players-panel.in-grid .panel-header-unified {
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+.teams-container.my-team-mode .players-panel.in-grid h2 {
+    font-size: 0.85em;
+    margin-bottom: 0;
+}
+
+.teams-container.my-team-mode .players-panel.in-grid .position-tabs {
+    gap: 2px;
+}
+
+.teams-container.my-team-mode .players-panel.in-grid .tab-btn {
+    padding: 2px 4px;
+    font-size: 0.6em;
+    min-width: 25px;
+}
+
+.teams-container.my-team-mode .players-panel.in-grid .control-buttons {
+    gap: 3px;
+}
+
+.teams-container.my-team-mode .players-panel.in-grid .edit-btn,
+.teams-container.my-team-mode .players-panel.in-grid .reset-btn {
+    padding: 2px 4px;
+    font-size: 0.6em;
+}
+
+/* 팀 편집 모드 */
+.teams-container.edit-mode .team {
+    cursor: move;
+}
+
+.teams-container:not(.edit-mode) .team {
+    cursor: default;
+}
+
+/* 내팀 모드에서 선수 그리드 flex 설정 */
+.teams-container.my-team-mode .players-panel.in-grid {
+    min-height: auto;
+    max-height: none;
+    height: auto;
+}
+
+.teams-container.my-team-mode .players-panel.in-grid .players-grid {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    align-content: start;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1024px) {
+    .teams-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .teams-container.my-team-mode {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto 1fr 1fr;
+        gap: 8px;
+        min-height: 700px;
+        align-items: start;
+    }
+    
+    .team.my-team {
+        grid-column: 1 / 3;
+        grid-row: 1;
+        transform: scale(1.0);
+        width: 80%;
+        margin-bottom: 10px;
+    }
+    
+    .other-teams-container {
+        grid-column: 1 / 3;
+        grid-row: 2;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 10px;
+        min-height: 400px;
+    }
+    
+    .team.other-team {
+        width: 100%;
+        height: 100%;
+        min-height: 180px;
+        display: flex;
+        flex-direction: column;
+        padding: 8px;
+        transform: scale(0.95);
+    }
+    
+    .team.other-team .team-points {
+        display: flex !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        border: 1px solid #bdc3c7 !important;
+        margin: 6px 3px 3px 3px;
+        padding: 6px;
+        font-size: 0.8em;
+    }
+    
+    .players-panel.in-grid {
+        grid-column: 3;
+        grid-row: 2;
+        transform: scale(0.95);
+        width: 100%;
+        height: 100%;
+        min-height: 220px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 8px;
+    }
+    
+    .players-grid {
+        grid-template-columns: repeat(3, 1fr);
+        overflow: hidden;
+    }
+    
+    .team-images {
+        gap: 6px;
+    }
+    
+    .player-img, .empty-slot {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .position-score {
+        width: 55px;
+        font-size: 0.7em;
+    }
+}
+
+@media (max-width: 768px) {
+    .teams-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .teams-container.my-team-mode {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        gap: 8px;
+        min-height: auto;
+    }
+    
+    .team.my-team {
+        grid-column: 1;
+        grid-row: 1;
+        transform: scale(1.0);
+        width: 90%;
+        margin-bottom: 8px;
+    }
+    
+    .other-teams-container {
+        grid-column: 1;
+        grid-row: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-height: auto;
+    }
+    
+    .team.other-team {
+        width: 100%;
+        min-height: auto;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .team.other-team .team-points {
+        display: flex !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        border: 1px solid #bdc3c7 !important;
+        margin: 8px 5px 5px 5px;
+        padding: 8px;
+        font-size: 0.85em;
+    }
+    
+    .players-panel.in-grid {
+        width: 100%;
+        min-height: auto;
+        max-height: none;
+        transform: scale(1.0);
+        overflow: visible;
+        padding: 10px;
+        margin-top: 10px;
+    }
+    
+    .players-grid {
+        grid-template-columns: repeat(2, 1fr);
+        overflow: visible;
+    }
+    
+    .team-images {
+        gap: 5px;
+    }
+    
+    .player-img, .empty-slot {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .position-label {
+        font-size: 0.5em;
+    }
+    
+    .player-name-label {
+        font-size: 0.6em;
+    }
+    
+    .position-score {
+        width: 50px;
+        font-size: 0.7em;
+        padding: 3px;
+    }
+    
+    /* 768px에서 컴팩트한 포지션 탭 */
+    .panel-header-unified {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .position-tabs {
+        gap: 3px;
+        order: 1;
+    }
+    
+    .control-buttons {
+        order: 2;
+        gap: 8px;
+    }
+    
+    .tab-btn {
+        padding: 5px 10px;
+        font-size: 0.8em;
+    }
+    
+    .players-panel {
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .teams-container {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .teams-container.my-team-mode {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        gap: 6px;
+        min-height: auto;
+    }
+    
+    .team.my-team {
+        grid-column: 1;
+        grid-row: 1;
+        transform: scale(1.0);
+        width: 95%;
+        margin-bottom: 6px;
+    }
+    
+    .other-teams-container {
+        grid-column: 1;
+        grid-row: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: auto;
+    }
+    
+    .team.other-team {
+        width: 100%;
+        min-height: auto;
+        padding: 8px;
+        margin-bottom: 8px;
+    }
+    
+    .team.other-team .team-points {
+        display: flex !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        border: 1px solid #bdc3c7 !important;
+        margin: 6px 3px 3px 3px;
+        padding: 6px;
+        font-size: 0.8em;
+    }
+    
+    .players-panel.in-grid {
+        width: 100%;
+        min-height: auto;
+        max-height: none;
+        transform: scale(1.0);
+        overflow: visible;
+        padding: 8px;
+        margin-top: 8px;
+    }
+    
+    .team-images {
+        gap: 2px;
+    }
+    
+    .player-img, .empty-slot {
+        width: 60px;
+        height: 60px;
+        font-size: 0.65em;
+    }
+    
+    .position-label {
+        font-size: 0.45em;
+        margin-top: 1px;
+        margin-bottom: 1px;
+    }
+    
+    .position-score {
+        width: 40px;
+        font-size: 0.6em;
+    }
+    
+    .team {
+        padding: 8px;
+    }
+    
+    /* 480px에서 매우 컴팩트한 포지션 탭 */
+    .panel-header-unified {
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+    }
+    
+    .position-tabs {
+        gap: 2px;
+        order: 1;
+    }
+    
+    .control-buttons {
+        order: 2;
+        gap: 5px;
+    }
+    
+    .tab-btn {
+        padding: 4px 8px;
+        font-size: 0.75em;
+        min-width: 40px;
+    }
+    
+    .edit-btn, .reset-btn {
+        padding: 4px 8px;
+        font-size: 0.75em;
+    }
+    
+    .players-panel {
+        padding: 10px;
+    }
+    
+    .players-panel h2 {
+        font-size: 1.0em;
+        margin-bottom: 0;
+    }
+}
+
+/* 로고 섹션 스타일 */
+.logo-section {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px 0;
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    max-width: 1400px;
+    width: 100%;
+    padding: 0 20px;
+}
+
+.logo-container a {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.logo-container a:hover {
+    transform: translateY(-2px);
+}
+
+.logo-img {
+    max-height: 80px;
+    max-width: 200px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    cursor: pointer;
+}
+
+.logo-img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* 반응형 로고 스타일 */
+@media (max-width: 768px) {
+    .logo-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .logo-img {
+        max-height: 60px;
+        max-width: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-section {
+        padding: 15px 0;
+        margin-top: 20px;
+    }
+    
+    .logo-img {
+        max-height: 50px;
+        max-width: 120px;
+    }
+}

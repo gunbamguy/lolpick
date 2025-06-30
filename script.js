@@ -127,6 +127,11 @@ class TeamManager {
             this.toggleEditMode();
         });
 
+        // 랜덤 버튼 이벤트
+        document.getElementById('randomBtn').addEventListener('click', () => {
+            this.randomizeTeamPositions();
+        });
+
         // 내 팀 선택 이벤트
         document.querySelectorAll('.my-team-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -432,6 +437,117 @@ class TeamManager {
 
         this.renderPlayers();
         this.saveToStorage(); // 선수 제거 시 저장
+    }
+
+    // 팀 위치 무작위 섞기
+    randomizeTeamPositions() {
+        if (confirm('팀들의 위치를 무작위로 섞으시겠습니까? (선수 배치는 유지됩니다)')) {
+            // 현재 모든 팀 DOM 요소들을 수집
+            const teamElements = Array.from(document.querySelectorAll('.team'));
+            const teamsContainer = document.querySelector('.teams-container');
+            
+            // 각 팀의 현재 데이터와 DOM을 함께 저장
+            const teamDataWithDOM = teamElements.map(teamElement => {
+                const teamId = parseInt(teamElement.dataset.team);
+                return {
+                    element: teamElement.cloneNode(true), // DOM 요소 복사
+                    data: { ...this.teams[teamId] } // 데이터 복사
+                };
+            });
+            
+            // Fisher-Yates 셔플 알고리즘으로 배열 섞기
+            for (let i = teamDataWithDOM.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [teamDataWithDOM[i], teamDataWithDOM[j]] = [teamDataWithDOM[j], teamDataWithDOM[i]];
+            }
+            
+            // 기존 팀들 제거
+            teamElements.forEach(element => element.remove());
+            
+            // 섞인 순서로 팀 데이터 업데이트 및 DOM 재배치
+            teamDataWithDOM.forEach((teamInfo, index) => {
+                // 데이터 업데이트 (새로운 위치 인덱스로)
+                this.teams[index] = {
+                    ...teamInfo.data,
+                    id: index
+                };
+                
+                // DOM 요소의 data-team 속성 업데이트
+                teamInfo.element.dataset.team = index.toString();
+                
+                // 내 팀 버튼의 data-team 속성도 업데이트
+                const myTeamBtn = teamInfo.element.querySelector('.my-team-btn');
+                if (myTeamBtn) {
+                    myTeamBtn.dataset.team = index.toString();
+                }
+                
+                // 팀 컨테이너에 추가
+                teamsContainer.appendChild(teamInfo.element);
+            });
+            
+            // 이벤트 리스너 재설정
+            this.reattachEventListeners();
+            
+            // 변경사항 저장
+            this.saveToStorage();
+            
+            console.log('팀 위치가 무작위로 섞였습니다.');
+        }
+    }
+
+    // 팀 표시 업데이트
+    updateTeamDisplay() {
+        // 모든 팀 컨테이너 찾기
+        const teamElements = document.querySelectorAll('.team');
+        
+        teamElements.forEach((teamElement, index) => {
+            const teamData = this.teams[index];
+            
+            // 팀 포인트 업데이트
+            const pointsInput = teamElement.querySelector('.points-input');
+            if (pointsInput) {
+                const currentPoints = parseInt(pointsInput.value) || 1000;
+                // 포인트는 현재 값 유지 (섞기는 위치만 바뀜)
+            }
+            
+            // 선수 배치 업데이트
+            ['top', 'mid', 'bot', 'sup'].forEach(position => {
+                const positionSlot = teamElement.querySelector(`.position-slot.${position}`);
+                const player = teamData.players[position];
+                
+                if (positionSlot) {
+                    // 기존 선수 컨테이너 제거
+                    const existingContainer = positionSlot.querySelector('.player-container');
+                    if (existingContainer) {
+                        existingContainer.remove();
+                    }
+                    
+                    // 빈 슬롯이 없다면 추가
+                    if (!positionSlot.querySelector('.empty-slot')) {
+                        const emptySlotHtml = `<div class="empty-slot" data-position="${position}">${this.getPositionName(position)}</div>`;
+                        positionSlot.insertAdjacentHTML('afterbegin', emptySlotHtml);
+                    }
+                    
+                    // 선수가 있다면 배치
+                    if (player) {
+                        const emptySlot = positionSlot.querySelector('.empty-slot');
+                        if (emptySlot) {
+                            this.updateSlot(emptySlot, {
+                                file: player.file,
+                                position: position,
+                                id: player.id
+                            });
+                        }
+                    }
+                }
+            });
+        });
+        
+        // 선수 목록 다시 렌더링 (사용된 선수 상태 업데이트)
+        this.renderPlayers();
+        
+        // 이벤트 리스너 재설정
+        this.reattachEventListeners();
     }
 
     resetAllTeams() {

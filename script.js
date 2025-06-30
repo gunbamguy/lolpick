@@ -637,7 +637,7 @@ class TeamManager {
         const positionNames = {
             top: '탑',
             mid: '미드',
-            bot: '봇',
+            bot: '원딜',
             sup: '서포터'
         };
         return positionNames[position] || position;

@@ -34,6 +34,18 @@ class TeamManager {
         this.setupDragAndDrop();
         this.highlightActivePositions(this.currentPosition);
         this.renderPlayers();
+        
+        // 초기 데이터 설정 - 모든 포지션 점수 입력란의 oldValue 설정
+        this.initializeScoreInputs();
+    }
+
+    // 초기 포지션 점수 입력란 설정
+    initializeScoreInputs() {
+        document.querySelectorAll('.position-slot:not(.jgl) .position-score').forEach(input => {
+            if (!input.dataset.oldValue) {
+                input.dataset.oldValue = input.value || '0';
+            }
+        });
     }
 
     setupEventListeners() {
@@ -102,59 +114,99 @@ class TeamManager {
         });
 
         // 포인트 입력 변경 이벤트
+        this.setupTeamPointsEvents();
+
+        // 포지션 점수 입력 이벤트 (정글러 제외)
+        this.setupPositionScoreEvents();
+    }
+
+    // 팀 포인트 입력 이벤트 설정 (재사용 가능한 메서드)
+    setupTeamPointsEvents() {
         document.querySelectorAll('.points-input').forEach(input => {
-            input.addEventListener('change', (e) => {
+            // 기존 이벤트 리스너 제거 (중복 방지)
+            const newInput = input.cloneNode(true);
+            input.parentNode.replaceChild(newInput, input);
+            
+            newInput.addEventListener('change', (e) => {
                 const value = parseInt(e.target.value);
                 if (value < 0) e.target.value = 0;
                 if (value > 1000) e.target.value = 1000;
                 this.saveToStorage(); // 포인트 변경 시 저장
             });
             
-            input.addEventListener('input', (e) => {
+            newInput.addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 if (value < 0) e.target.value = 0;
                 if (value > 1000) e.target.value = 1000;
             });
             
-            input.addEventListener('blur', (e) => {
+            newInput.addEventListener('blur', (e) => {
                 this.saveToStorage(); // 포인트 수정 완료 시 저장
             });
         });
+    }
 
+    // 포지션 점수 입력 이벤트 설정 (재사용 가능한 메서드)
+    setupPositionScoreEvents() {
         // 포지션 점수 입력 이벤트 (정글러 제외)
         document.querySelectorAll('.position-slot:not(.jgl) .position-score').forEach(input => {
-            input.addEventListener('input', (e) => {
-                const newScore = parseInt(e.target.value) || 0;
-                const oldScore = parseInt(e.target.dataset.oldValue) || 0;
-                
-                if (newScore < 0) {
-                    e.target.value = 0;
-                    return;
-                }
-                if (newScore > 1000) {
-                    e.target.value = 1000;
-                    return;
-                }
-
-                // 해당 팀의 포인트 업데이트
-                const teamElement = e.target.closest('.team');
-                const pointsInput = teamElement.querySelector('.points-input');
-                const currentPoints = parseInt(pointsInput.value);
-                const scoreDifference = newScore - oldScore;
-                const newPoints = Math.max(0, currentPoints - scoreDifference);
-                
-                pointsInput.value = newPoints;
-                e.target.dataset.oldValue = newScore;
-                
-                // 점수 변경 시 자동 저장
-                setTimeout(() => this.saveToStorage(), 100);
+            // 기존 이벤트 리스너 제거 (중복 방지)
+            const newInput = input.cloneNode(true);
+            input.parentNode.replaceChild(newInput, input);
+            
+            // 포지션 점수 변경 시 팀 포인트 차감 로직
+            newInput.addEventListener('input', (e) => {
+                this.handlePositionScoreChange(e);
             });
 
-            // 초기 값 저장
-            input.addEventListener('focus', (e) => {
-                e.target.dataset.oldValue = e.target.value;
+            // 초기 값 저장 (포인트 차감 계산을 위해)
+            newInput.addEventListener('focus', (e) => {
+                e.target.dataset.oldValue = e.target.value || '0';
             });
         });
+    }
+
+    // 포지션 점수 변경 처리 (팀 포인트 차감 포함)
+    handlePositionScoreChange(event) {
+        const input = event.target;
+        let newScore = parseInt(input.value) || 0;
+        const oldScore = parseInt(input.dataset.oldValue) || 0;
+        
+        // 점수 범위 검증
+        if (newScore < 0) {
+            newScore = 0;
+            input.value = 0;
+        }
+        if (newScore > 1000) {
+            newScore = 1000;
+            input.value = 1000;
+        }
+
+        // 해당 팀의 포인트에서 점수 차이만큼 차감
+        const teamElement = input.closest('.team');
+        if (!teamElement) {
+            console.error('팀 요소를 찾을 수 없습니다.');
+            return;
+        }
+        
+        const pointsInput = teamElement.querySelector('.points-input');
+        if (!pointsInput) {
+            console.error('포인트 입력란을 찾을 수 없습니다.');
+            return;
+        }
+        
+        const currentPoints = parseInt(pointsInput.value) || 0;
+        const scoreDifference = newScore - oldScore;
+        const newPoints = Math.max(0, currentPoints - scoreDifference);
+        
+        // 팀 포인트 업데이트
+        pointsInput.value = newPoints;
+        input.dataset.oldValue = newScore;
+        
+        // 변경사항 저장
+        setTimeout(() => this.saveToStorage(), 100);
+        
+        console.log(`[팀 ${teamElement.dataset.team}] 포지션 점수 변경: ${oldScore} → ${newScore}, 팀 포인트: ${currentPoints} → ${newPoints} (차감: ${scoreDifference})`);
     }
 
     renderPlayers() {
@@ -377,6 +429,8 @@ class TeamManager {
                     slot.insertAdjacentHTML('beforeend', emptySlotHtml);
                     
                     if (scoreInput) {
+                        scoreInput.value = '0';
+                        scoreInput.dataset.oldValue = '0';
                         slot.appendChild(scoreInput);
                     } else {
                         const newScoreInput = document.createElement('input');
@@ -386,6 +440,7 @@ class TeamManager {
                         newScoreInput.min = '0';
                         newScoreInput.max = '1000';
                         newScoreInput.placeholder = '점수';
+                        newScoreInput.dataset.oldValue = '0';
                         slot.appendChild(newScoreInput);
                     }
                 }
@@ -393,6 +448,10 @@ class TeamManager {
 
             this.selectedPlayer = null;
             this.renderPlayers();
+            
+            // 이벤트 리스너 재설정 (새로 생성된 입력 필드들에 대해)
+            this.setupPositionScoreEvents();
+            
             this.saveToStorage(); // 리셋 후 저장
         }
     }
@@ -840,59 +899,11 @@ class TeamManager {
             });
         });
 
-        // 포인트 입력 이벤트 재설정
-        document.querySelectorAll('.position-slot:not(.jgl) .position-score').forEach(input => {
-            input.addEventListener('input', (e) => {
-                const newScore = parseInt(e.target.value) || 0;
-                const oldScore = parseInt(e.target.dataset.oldValue) || 0;
-                
-                if (newScore < 0) {
-                    e.target.value = 0;
-                    return;
-                }
-                if (newScore > 1000) {
-                    e.target.value = 1000;
-                    return;
-                }
-
-                // 해당 팀의 포인트 업데이트
-                const teamElement = e.target.closest('.team');
-                const pointsInput = teamElement.querySelector('.points-input');
-                const currentPoints = parseInt(pointsInput.value);
-                const scoreDifference = newScore - oldScore;
-                const newPoints = Math.max(0, currentPoints - scoreDifference);
-                
-                pointsInput.value = newPoints;
-                e.target.dataset.oldValue = newScore;
-                
-                // 점수 변경 시 자동 저장
-                setTimeout(() => this.saveToStorage(), 100);
-            });
-
-            input.addEventListener('focus', (e) => {
-                e.target.dataset.oldValue = e.target.value;
-            });
-        });
+        // 포지션 점수 입력 이벤트 재설정
+        this.setupPositionScoreEvents();
 
         // 포인트 입력 변경 이벤트 재설정
-        document.querySelectorAll('.points-input').forEach(input => {
-            input.addEventListener('change', (e) => {
-                const value = parseInt(e.target.value);
-                if (value < 0) e.target.value = 0;
-                if (value > 1000) e.target.value = 1000;
-                this.saveToStorage(); // 포인트 변경 시 저장
-            });
-            
-            input.addEventListener('input', (e) => {
-                const value = parseInt(e.target.value);
-                if (value < 0) e.target.value = 0;
-                if (value > 1000) e.target.value = 1000;
-            });
-            
-            input.addEventListener('blur', (e) => {
-                this.saveToStorage(); // 포인트 수정 완료 시 저장
-            });
-        });
+        this.setupTeamPointsEvents();
     }
 }
 

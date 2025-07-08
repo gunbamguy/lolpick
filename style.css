@@ -604,11 +604,11 @@ body {
     overflow: visible;
     width: 100%;
     height: auto;
-    min-height: 220px;
-    max-height: 280px; /* 최대 높이 제한 추가 */
+    min-height: 270px;
+    max-height: 340px; /* 최대 높이 제한 확장 */
     display: flex;
     flex-direction: column;
-    padding: 12px;
+    padding: 24px 12px 24px 12px; /* 상하 패딩 증가 */
     justify-self: stretch;
     align-self: start;
     box-sizing: border-box;
@@ -668,9 +668,11 @@ body {
 .other-teams-container .team.other-team {
     width: 100% !important;
     height: auto !important;
-    min-height: 220px !important;
-    max-height: 280px !important;
+    min-height: 270px !important;
+    max-height: 340px !important;
     flex: none !important;
+    padding-top: 24px !important;
+    padding-bottom: 24px !important;
 }
 
 /* 선수 선택 패널을 other-teams-container 내부의 우측 하단에 배치 */

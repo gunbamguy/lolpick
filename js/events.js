@@ -34,9 +34,12 @@ function setupEventListeners() {
         }
         else if (e.target.classList.contains('player-img') && !e.target.classList.contains('fixed')) {
             const slot = e.target.closest('.position-slot');
+            if (!slot) return;
             const teamElement = slot.closest('.team');
+            if (!teamElement) return;
             const teamId = parseInt(teamElement.dataset.team);
-            
+            if (isNaN(teamId) || !state.teams[teamId]) return;
+
             let position = null;
             const positionClasses = ['top', 'mid', 'bot', 'sup'];
             for (const pos of positionClasses) {
@@ -45,7 +48,7 @@ function setupEventListeners() {
                     break;
                 }
             }
-            
+
             if (position) {
                 const player = state.teams[teamId].players[position];
                 if (player) {
